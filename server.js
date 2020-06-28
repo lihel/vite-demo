@@ -7,8 +7,10 @@ const compilerDom = require("@vue/compiler-dom"); // 模版
 const app = new Koa();
 function rewriteImport(content) {
   return content.replace(/from ['|"]([^'"]+)['|"]/g, function (s0, s1) {
-    console.log(s1);
+    // console.log(s1);
+    // . ../ /开头的都是相对路径
     if (s1[0] !== "." && s1[1] !== "/") {
+      // 没有路径开头的都认为来自node_modules，为其添加前缀，便于解析时分开解析
       return `from '/@modules/${s1}'`;
     } else {
       return s0;
@@ -20,15 +22,18 @@ app.use(async (ctx) => {
   const { request } = ctx;
   const { url } = request;
   if (url === "/") {
+    // 访问首页解析html
     ctx.type = "text/html";
     ctx.body = fs.readFileSync("./index.html", "utf-8");
   } else if (url.endsWith(".js")) {
+    // 访问js
     console.log("这是一个js文件，do something");
     // js需要做额外处理，不是简单的静态资源
     const p = path.resolve(__dirname, url.slice(1));
     ctx.type = "application/javascript";
     const ret = fs.readFileSync(p, "utf-8");
     ctx.body = rewriteImport(ret);
+    // 如果是react还需解析jsx
   } else if (url.startsWith("/@modules/")) {
     // 这是node_modules里的东西
     const prefix = path.resolve(

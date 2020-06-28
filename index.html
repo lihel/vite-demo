@@ -9,6 +9,9 @@
   <body>
     <div id="app"></div>
     <script>
+      // 应该会注入一段client代码，这段代码由后端注入
+      // 热更新走的是socket io，代码也在这里注入
+      // 这边为实现原理，方便起见将代码直接写在这里
       window.process = {
         env: {
           NODE_ENV: "",
